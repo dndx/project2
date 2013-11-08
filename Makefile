@@ -2,6 +2,9 @@
 CC=g++
 CFLAGS=-std=c++11 -Wall -g
 
+simulator.o : simulator.cc simulator.h
+	$(CC) $(CFLAGS) -c simulator.cc
+
 miner_parser.o : miner_parser.tab.c miner_type.cc lex.yy.c
 	$(CC) $(CFLAGS) -c miner_parser.tab.c miner_type.cc lex.yy.c
 
