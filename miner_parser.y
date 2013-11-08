@@ -2,7 +2,9 @@
 #include <iostream>
 #include <cstring>
 #include "miner_type.h"
+#include "utils.h"
 using namespace std;
+Struct parse_miner_string(string sin);
 Struct *output;
 
 extern "C"
@@ -10,6 +12,7 @@ extern "C"
     void yyerror(const char *);
     int yylex();
     extern int yylineno;
+    void switch_string(const char *str);
 }
 
 %}
@@ -115,21 +118,21 @@ list : TOKEN_LEFT_PARENTHESIS TOKEN_INTEGER TOKEN_COMMA
 
 %%
 
-int main()
+Struct parse_miner_string(string &sin)
 {
+    switch_string(sin.c_str());
+
     int ret = yyparse();
-    cout << "yyparse returned " << ret << endl;
 
     if (ret)
-        return 1;
+        FATAL("error while parsing miner file");
 
-    Struct s = (*output);
-    Value v(s);
-    cout << v << endl;
+    Struct tmp = *output;
     delete output;
-    }
+    return tmp;
+}
 
 void yyerror(const char *s)
 {
-    fprintf(stderr, "%s on line %d\n", s, yylineno);
+    FATAL("%s on line %d", s, yylineno);
 }

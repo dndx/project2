@@ -2,10 +2,13 @@
 %{
 #include <iostream>
 #include "miner_parser.tab.h"
+
 extern "C" 
-{
-    int yylex();
-}
+    {
+        int yylex();
+        void switch_string(const char *s);
+    }
+
 using namespace std;
 %}
 
@@ -24,4 +27,9 @@ using namespace std;
 ","              {return TOKEN_COMMA; }
 #.*$             ;
 %%
+
+void switch_string(const char *s)
+{
+    yy_scan_string(s);
+}
 
