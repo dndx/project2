@@ -4,10 +4,10 @@
 #include "miner_parser.tab.h"
 
 extern "C" 
-    {
-        int yylex();
-        void switch_string(const char *s);
-    }
+{
+    int yylex();
+    void switch_string(const char *s);
+}
 
 using namespace std;
 %}

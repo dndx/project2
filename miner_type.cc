@@ -197,6 +197,7 @@ std::map<std::string, Value>::const_iterator Struct::cend() const noexcept
 }
 
 Value& Struct::operator[](const std::string key) {return m[key]; }
+size_t Struct::count (const std::map<std::string, Value>::key_type& k) const {return m.count(k); }
 size_t Struct::size() const {return m.size(); }
 
 using namespace std;

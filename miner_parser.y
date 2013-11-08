@@ -4,7 +4,7 @@
 #include "miner_type.h"
 #include "utils.h"
 using namespace std;
-Struct parse_miner_string(string sin);
+
 Struct *output;
 
 extern "C"
@@ -136,3 +136,4 @@ void yyerror(const char *s)
 {
     FATAL("%s on line %d", s, yylineno);
 }
+

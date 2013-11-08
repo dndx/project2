@@ -3,14 +3,14 @@
 
 using namespace std;
 
-Simulator::Simulator(int x_low, int x_high, int y_low, int y_high) : 
-                    x_low(x_low), x_high(x_high), y_low(y_low), y_high(y_high)
+Simulator::Simulator(int y_low, int y_high, int x_low, int x_high) : 
+                    y_low(y_low), y_high(y_high), x_low(x_low), x_high(x_high)
 {
-    grid.resize(x_high - x_low + 1);
+    grid.resize(y_high - y_low + 1);
     
     for (auto i = grid.begin(); i != grid.end(); i++)
     {
-        i->resize(y_high - y_low + 1);
+        i->resize(x_high - x_low + 1);
     }
 }
 
@@ -18,24 +18,26 @@ void Simulator::simulate()
 {
     std::vector<std::vector<bool>> next_gen{grid};
     
-    for (auto ix = grid.cbegin(); ix != grid.cend(); ix++)
+    for (auto iy = grid.cbegin(); iy != grid.cend(); ++iy)
     {
-        unsigned int x = ix - grid.cbegin();
+        unsigned int y = iy - grid.cbegin();
 
-        for (auto iy = ix->cbegin(); iy != ix->cend(); iy++)
+        for (auto ix = iy->cbegin(); ix != iy->cend(); ++ix)
         {
-            unsigned int y = iy - ix->cbegin();
-            unsigned int neighbors = count_live_neighbors(x, y);
+            unsigned int x = ix - iy->cbegin();
+            unsigned int neighbors = count_live_neighbors(y, x);
 
-            if (*iy) // alive
+            //cout << y << ' ' << x << " is " << neighbors << endl;
+
+            if (*ix) // alive
             {
                 if (neighbors < 2 || neighbors > 3)
-                    next_gen[x][y] = false;
+                    next_gen[y][x] = false;
             }
             else // dead
             {
                 if (neighbors == 3)
-                    next_gen[x][y] = true;
+                    next_gen[y][x] = true;
             }
         }
     }
@@ -43,39 +45,65 @@ void Simulator::simulate()
     grid = next_gen;
 }
 
-unsigned int Simulator::count_live_neighbors(int x, int y)
+unsigned int Simulator::count_live_neighbors(int y, int x)
 {
+    //cout << "counting" << y << ',' << x << endl;
     unsigned int result{0};
-    for (int ix = max(x - 1, 0); ix < min(x + 1, to_x(x_high)); ix++)
+    //cout << "max(y - 1, 0)" << max(y - 1, 0) << " min(y + 1, (int) to_y(y_high))"
+    //     << min(y + 1, (int) to_y(y_high)) << endl;
+    for (int iy = max(y - 1, 0); iy <= min(y + 1, (int) to_y(y_high)); ++iy)
     {
-        for (int iy = max(y - 1, 0); iy < min(y + 1, to_y(y_high)); iy++)
+    //cout << "max(x - 1, 0)" << max(x - 1, 0) << " min(x + 1, (int) to_x(x_high))"
+    //     << min(x + 1, (int) to_x(x_high)) << endl;
+        for (int ix = max(x - 1, 0); ix <= min(x + 1, (int) to_x(x_high)); ++ix)
         {
-            if (ix == x && iy == y)
+           //cout << "    " << iy << ',' << ix << endl;
+            if (iy == y && ix == x)
                 continue;
-            if (get_status(ix, iy))
+            if (grid[iy][ix])
                 result++;
         }
     }
     return result;
 }
 
-void Simulator::set_status(int x, int y, bool status)
+void Simulator::set_status(int y, int x, bool status)
 {
-    grid[to_x(x)][to_y(y)] = status;
+    grid[to_y(y)][to_x(x)] = status;
 }
 
-bool Simulator::get_status(int x, int y)
+bool Simulator::get_status(int y, int x)
 {
-    return grid[to_x(x)][to_y(y)];
+    return grid[to_y(y)][to_x(x)];
 }
 
-int Simulator::to_x(int x)
+unsigned int Simulator::to_x(int x)
 {
     return x - x_low;
 }
 
-int Simulator::to_y(int y)
+unsigned int Simulator::to_y(int y)
 {
     return y - y_low;
+}
+
+vector<vector<bool>>::const_iterator Simulator::cbegin()
+{
+    return grid.cbegin();
+}
+
+vector<vector<bool>>::const_iterator Simulator::cend()
+{
+    return grid.cend();
+}
+
+vector<vector<bool>>::const_reverse_iterator Simulator::crbegin()
+{
+    return grid.crbegin();
+}
+
+vector<vector<bool>>::const_reverse_iterator Simulator::crend()
+{
+    return grid.crend();
 }
 

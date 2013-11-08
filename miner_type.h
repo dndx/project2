@@ -36,6 +36,7 @@ class Struct {
         Struct(Struct &&s);
 
         Value& operator[](const std::string key);
+        size_t count(const std::map<std::string, Value>::key_type& k) const;
         size_t size() const;
         Struct &operator=(const Struct &l);
         Struct &operator=(Struct &&l);
