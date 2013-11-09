@@ -40,16 +40,6 @@ void show_terrain(Simulator &sim, unsigned char alive, unsigned char dead, pair<
     }
 }
 
-pair<int, int> extract_pair(const char *s)
-{
-    pair<int, int> result;
-    int ret = sscanf(s, "%d..%d", &result.first, &result.second);
-    if (ret != 2)
-        FATAL("invalid pair format %s", s);
-
-    return result;
-}
-
 int main(int argc, char *argv[])
 {
     opterr = 0; // mute getopt error meesage

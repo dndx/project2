@@ -42,16 +42,6 @@ QImage *generate_terrain(Simulator &sim, array<int, 3> alive, array<int, 3> dead
     return img;
 }
 
-pair<int, int> extract_pair(const char *s)
-{
-    pair<int, int> result;
-    int ret = sscanf(s, "%d..%d", &result.first, &result.second);
-    if (ret != 2)
-        FATAL("invalid pair format %s", s);
-
-    return result;
-}
-
 int main(int argc, char *argv[])
 {
     opterr = 0; // mute getopt error meesage
