@@ -42,7 +42,7 @@ void Simulator::simulate()
         }
     }
 
-    grid = next_gen;
+    grid = move(next_gen);
 }
 
 unsigned int Simulator::count_live_neighbors(int y, int x)
