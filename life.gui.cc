@@ -265,7 +265,7 @@ int main(int argc, char *argv[])
 
     array<int, 3> alive = (array<int, 3>) colors["Alive"], dead = (array<int, 3>) colors["Dead"];
 
-    string title;
+    string title{"No Title"};
     if (input["Name"].get_type() == STRING)
         title = (string) input["Name"];
 
