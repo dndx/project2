@@ -247,9 +247,18 @@ int main(int argc, char *argv[])
     {
         if (input["Window"].get_type() != STRUCT)
             FATAL("incorrect type of Window");
+
         window_range = input["Window"];
-        if (window_range["Xrange"].get_type() != RANGE || window_range["Yrange"].get_type() != RANGE)
-            FATAL("missing Xrange and Yrange of Window or incorrect type");
+
+        if ((window_range["Xrange"].get_type() != RANGE && window_range["Xrange"].get_type() != INVALID) ||
+            (window_range["Yrange"].get_type() != RANGE && window_range["Yrange"].get_type() != INVALID))
+            FATAL("Xrange or Yrange of Window has incorrect type");
+
+        if (window_range["Xrange"].get_type() != RANGE)
+            window_range["Xrange"] = terrain_range["Xrange"];
+
+        if (window_range["Yrange"].get_type() != RANGE)
+            window_range["Yrange"] = terrain_range["Yrange"];
     }
 
     if (!terrain_y_override)
