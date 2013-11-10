@@ -17,11 +17,63 @@ void show_terrain(Simulator &sim, unsigned char alive, unsigned char dead, pair<
     xrange.first = sim.to_x(xrange.first);
     xrange.second = sim.to_x(xrange.second);
 
+    for (int i = yrange.second; i >= yrange.first; --i)
+    {
+        if ((unsigned int) i < sim.size() && i >= 0) // within terrain range
+        {
+            for (int i = xrange.first; i < 0; i++) // prefix cells not in terrain
+                cout << dead;
+
+            for (auto ix = sim[i].cbegin(); ix != sim[i].cend(); ++ix)
+            {
+                int x_index = ix - sim[i].cbegin();
+
+                if (x_index < xrange.first || x_index > xrange.second)
+                    continue;
+
+                if (*ix) // alive
+                {
+                    cout << alive;
+                }
+                else // dead
+                {
+                    cout << dead;
+                }
+            }
+
+            for (int i = sim.xsize() - 1; i < xrange.second; i++) // postfix cells not in terrain
+                cout << dead;
+        }
+        else // not in terrain range
+        {
+            for (int i = 0; i < xrange.second - xrange.first + 1; ++i)
+                cout << dead;
+        }
+        cout << endl;
+    }
+
+    return;
+
+    for (unsigned i = yrange.second; i > sim.size() - 1; --i)
+    {
+        for (unsigned j = 0; j < sim.xsize(); j++)
+        {
+            cout << dead;
+        }
+        cout << endl;
+    }
+
+
     for (auto iy = sim.crbegin(); iy != sim.crend(); ++iy)
     {
         int y = sim.size() - 1 - (iy - sim.crbegin());
         if (y < yrange.first || y > yrange.second)
             continue;
+
+        for (int i = xrange.first; i < 0; i++) // pre-row dead cell
+            cout << dead;
+
+
         for (auto ix = iy->cbegin(); ix != iy->cend(); ++ix)
         {
             int x = ix - iy->cbegin();
@@ -36,6 +88,10 @@ void show_terrain(Simulator &sim, unsigned char alive, unsigned char dead, pair<
                 cout << dead;
             }
         }
+
+        for (int i = 0; i <= xrange.second - (iy->cend() - iy->cbegin()); i++) // post-row dead cell
+            cout << dead;
+
         cout << endl;
     }
 }
@@ -247,11 +303,11 @@ int main(int argc, char *argv[])
         sim.set_status(coord.second, coord.first, true);
     }
 
-    if (window_y_range.first < terrain_y_range.first || window_y_range.second > terrain_y_range.second)
+    /*if (window_y_range.first < terrain_y_range.first || window_y_range.second > terrain_y_range.second)
         FATAL("Y range of Window out of bound");
 
     if (window_x_range.first < terrain_x_range.first || window_x_range.second > terrain_x_range.second)
-        FATAL("X range of Window out of bound");
+        FATAL("X range of Window out of bound");*/
 
     if (input["Chars"].get_type() != STRUCT)
         FATAL("missing Chars definition or incorrect value type");

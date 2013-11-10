@@ -22,11 +22,12 @@ QImage *generate_terrain(Simulator &sim, array<int, 3> alive, array<int, 3> dead
                              yrange.second - yrange.first + 1, QImage::Format_ARGB32);
     img->fill(QColor(dead[0], dead[1], dead[2]));
 
-    for (auto iy = sim.crbegin(); iy != sim.crend(); ++iy)
+    for (auto iy = sim.cbegin(); iy != sim.cend(); ++iy)
     {
-        int y = sim.size() - 1 - (iy - sim.crbegin());
+        int y = iy - sim.cbegin();
         if (y < yrange.first || y > yrange.second)
             continue;
+
         for (auto ix = iy->cbegin(); ix != iy->cend(); ++ix)
         {
             int x = ix - iy->cbegin();
@@ -34,7 +35,7 @@ QImage *generate_terrain(Simulator &sim, array<int, 3> alive, array<int, 3> dead
                 continue;
             if (*ix) // alive
             {
-                img->setPixel(x - xrange.first, iy - sim.crbegin() - (sim.size() - 1 - yrange.second), QColor(alive[0], alive[1], alive[2]).rgba());
+                img->setPixel(x - xrange.first, yrange.second - y, QColor(alive[0], alive[1], alive[2]).rgba());
             }
         }
     }
@@ -244,12 +245,6 @@ int main(int argc, char *argv[])
 
         sim.set_status(coord.second, coord.first, true);
     }
-
-    if (window_y_range.first < terrain_y_range.first || window_y_range.second > terrain_y_range.second)
-        FATAL("Y range of Window out of bound");
-
-    if (window_x_range.first < terrain_x_range.first || window_x_range.second > terrain_x_range.second)
-        FATAL("X range of Window out of bound");
 
     if (input["Colors"].get_type() != STRUCT)
         FATAL("missing Colors definition or incorrect value type");

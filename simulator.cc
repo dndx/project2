@@ -112,3 +112,16 @@ vector<vector<bool>>::size_type Simulator::size() const noexcept
     return grid.size();
 }
 
+vector<bool>::size_type Simulator::xsize() const noexcept
+{
+    if (size() > 0)
+        return grid[0].size();
+    else
+        return 0;
+}
+
+vector<vector<bool>>::const_reference Simulator::operator[] (vector<vector<bool>>::size_type n) const
+{
+    return grid[n];
+}
+

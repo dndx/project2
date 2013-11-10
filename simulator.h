@@ -12,11 +12,13 @@ class Simulator {
         bool get_status(int y, int x);
         unsigned int to_x(int x);
         unsigned int to_y(int y);
+        std::vector<bool>::size_type xsize() const noexcept;
         std::vector<std::vector<bool>>::const_iterator cbegin();
         std::vector<std::vector<bool>>::const_iterator cend();
         std::vector<std::vector<bool>>::const_reverse_iterator crbegin();
         std::vector<std::vector<bool>>::const_reverse_iterator crend();
         std::vector<std::vector<bool>>::size_type size() const noexcept;
+        std::vector<std::vector<bool>>::const_reference operator[] (std::vector<std::vector<bool>>::size_type n) const;
 
     private:
         unsigned int count_live_neighbors(int y, int x); // x and y should be converted
