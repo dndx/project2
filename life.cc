@@ -19,7 +19,7 @@ void show_terrain(Simulator &sim, unsigned char alive, unsigned char dead, pair<
 
     for (auto iy = sim.crbegin(); iy != sim.crend(); ++iy)
     {
-        int y = iy - sim.crbegin();
+        int y = sim.size() - 1 - (iy - sim.crbegin());
         if (y < yrange.first || y > yrange.second)
             continue;
         for (auto ix = iy->cbegin(); ix != iy->cend(); ++ix)

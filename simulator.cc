@@ -107,3 +107,8 @@ vector<vector<bool>>::const_reverse_iterator Simulator::crend()
     return grid.crend();
 }
 
+vector<vector<bool>>::size_type Simulator::size() const noexcept
+{
+    return grid.size();
+}
+

@@ -16,6 +16,7 @@ class Simulator {
         std::vector<std::vector<bool>>::const_iterator cend();
         std::vector<std::vector<bool>>::const_reverse_iterator crbegin();
         std::vector<std::vector<bool>>::const_reverse_iterator crend();
+        std::vector<std::vector<bool>>::size_type size() const noexcept;
 
     private:
         unsigned int count_live_neighbors(int y, int x); // x and y should be converted

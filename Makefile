@@ -1,8 +1,10 @@
-.PHONY : clean
+.PHONY : clean all
 CC=g++
 CFLAGS=-std=c++11 -Wall -g
 QT_INCLUDE=-I/usr/lib64/qt4/mkspecs/linux-g++ -I. -I/usr/include/QtCore -I/usr/include/QtGui
 QT_LIBS=-L/usr/lib64 -lQtGui -lQtCore -lpthread -DQT_NO_DEBUG -DQT_GUI_LIB -DQT_CORE_LIB -DQT_SHARED
+
+all: life life.gui
 
 life.gui : simulator.o miner_parser.tab.o lex.yy.o miner_type.o LifeGrid.o LifeGrid.moc.o utils.o life.gui.o
 	$(CC) $(CFLAGS) $(QT_INCLUDE) $(QT_LIBS) -o $@ $^

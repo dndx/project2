@@ -15,7 +15,7 @@ LifeGrid::LifeGrid(QWidget *parent)
 QSize LifeGrid::sizeHint() const
 {
     QSize size = zoom * image.size();
-    if (zoom >= 3)
+    if (zoom > 3)
         size += QSize(1, 1);
     return size;
 }
@@ -46,7 +46,7 @@ void LifeGrid::setZoomFactor(int newZoom)
 void LifeGrid::paintEvent(QPaintEvent *event)
 {
     QPainter painter(this);
-    if (zoom >= 3)
+    if (zoom > 3)
     {
         painter.setPen(palette().foreground().color());
         for (int i = 0; i <= image.width(); ++i)
@@ -68,7 +68,7 @@ void LifeGrid::paintEvent(QPaintEvent *event)
 
 QRect LifeGrid::pixelRect(int i, int j) const
 {
-    if (zoom >= 3) {
+    if (zoom > 3) {
         return QRect(zoom * i + 1, zoom * j + 1, zoom - 1, zoom - 1);
     }else{
         return QRect(zoom * i, zoom * j, zoom, zoom);

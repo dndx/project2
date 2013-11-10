@@ -24,17 +24,17 @@ QImage *generate_terrain(Simulator &sim, array<int, 3> alive, array<int, 3> dead
 
     for (auto iy = sim.crbegin(); iy != sim.crend(); ++iy)
     {
-        int y = iy - sim.crbegin();
-        //if (y < yrange.first || y > yrange.second)
-        //    continue;
+        int y = sim.size() - 1 - (iy - sim.crbegin());
+        if (y < yrange.first || y > yrange.second)
+            continue;
         for (auto ix = iy->cbegin(); ix != iy->cend(); ++ix)
         {
             int x = ix - iy->cbegin();
-        //    if (x < xrange.first || x > xrange.second)
-        //        continue;
+            if (x < xrange.first || x > xrange.second)
+                continue;
             if (*ix) // alive
             {
-                img->setPixel(x, y, QColor(alive[0], alive[1], alive[2]).rgba());
+                img->setPixel(x - xrange.first, iy - sim.crbegin() - (sim.size() - 1 - yrange.second), QColor(alive[0], alive[1], alive[2]).rgba());
             }
         }
     }
@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
 {
     opterr = 0; // mute getopt error meesage
     int c;
-    int generation{0};
+    int generation{0}, grid_size{10};
     bool terrain_x_override{false}, terrain_y_override{false};
     bool window_x_override{false}, window_y_override{false};
     pair<int, int> terrain_y_range, terrain_x_range, window_y_range, window_x_range;
@@ -77,14 +77,15 @@ int main(int argc, char *argv[])
         }
     }
 
-    while ((c = getopt(argc, argv, "g:hq:w:e:r:")) != -1)
+    while ((c = getopt(argc, argv, "g:hq:w:e:r:s:")) != -1)
     {
         switch (c)
         {
             case 'h':
-                cerr << "Usage: life [-fhv] [-g n] [-tx l..h] [-ty l..h] [-wx l..h] [-wy l..h] [filename]" << endl << endl
+                cerr << "Usage: life.gui [-h] [-g n] [-s n] [-tx l..h] [-ty l..h] [-wx l..h] [-wy l..h] [filename]" << endl << endl
                      << "  -g n      Specify the desired generation number. If omitted, the default should be n = 0" << endl
                      << "  -h        Display this message and quit" << endl
+                     << "  -s n      Specify the size of each cell, in pixel, defult: 10" << endl
                      << "  -tx l..h  Set the x range of the terrain; overrides values specified in the input file" << endl
                      << "  -ty l..h  Set the y range of the terrain; overrides values specified in the input file" << endl
                      << "            dead and alive cells" << endl
@@ -117,6 +118,12 @@ int main(int argc, char *argv[])
             case 'r': // wx
                 window_x_override = true;
                 window_x_range = extract_pair(optarg);
+                break;
+
+            case 's':
+                grid_size = atoi(optarg);
+                if (grid_size <= 0)
+                    FATAL("grid size muse be at least 1 pixel");
                 break;
 
             case '?':
@@ -254,8 +261,6 @@ int main(int argc, char *argv[])
 
     array<int, 3> alive = (array<int, 3>) colors["Alive"], dead = (array<int, 3>) colors["Dead"];
 
-    cerr << alive[0];
-
     string title;
     if (input["Name"].get_type() == STRING)
         title = (string) input["Name"];
@@ -272,7 +277,7 @@ int main(int argc, char *argv[])
     LifeGrid *l = new LifeGrid();
     l->setIconImage(*img);
     delete img;
-    l->setZoomFactor(20);
+    l->setZoomFactor(grid_size);
     QHBoxLayout *layout = new QHBoxLayout;
     layout->setSpacing(0);
     layout->setMargin(0);
