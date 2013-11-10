@@ -70,10 +70,10 @@ key : TOKEN_KEY {
 
 value : string {$$ = new Value($1); free($1); }
       | TOKEN_INTEGER {$$ = new Value($1); }
-      | struct {$$ = new Value(*$1); delete $1; }
-      | range {$$ = new Value(*$1); delete $1; }
-      | triple {$$ = new Value(*$1); delete $1; }
-      | list {$$ = new Value(*$1); delete $1; }
+      | struct {$$ = new Value(move(*$1)); delete $1; }
+      | range {$$ = new Value(move(*$1)); delete $1; }
+      | triple {$$ = new Value(move(*$1)); delete $1; }
+      | list {$$ = new Value(move(*$1)); delete $1; }
       ;
 
 struct : TOKEN_STRUCT_START assignments TOKEN_STRUCT_END {
@@ -86,7 +86,7 @@ assignments : {
             }
             |
             assignments key TOKEN_EQUAL_SIGN value TOKEN_SEMICOLON {
-                (*$$)[$2] = *$4;
+                (*$$)[$2] = move(*$4);
                 delete $4;
                 free($2);
             }
