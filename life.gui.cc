@@ -237,23 +237,25 @@ int main(int argc, char *argv[])
         FATAL("missing Initial defination or incorrect value type for Initial");
 
     Struct initial{input["Initial"]};
-    if (initial["Alive"].get_type() != LIST)
-        FATAL("missing Alive or incorrect type");
-
-    List initial_alive{initial["Alive"]};
-
-    for (unsigned int i = 0; i < initial_alive.size(); ++i)
+    if (initial["Alive"].get_type() == LIST)
     {
-        pair<int, int> coord{initial_alive[i]};
+        List initial_alive{initial["Alive"]};
 
-        if (coord.first < terrain_x_range.first || coord.first > terrain_x_range.second)
-            FATAL("initial cell x coordinate out of bound, got %d", coord.first);
+        for (unsigned int i = 0; i < initial_alive.size(); ++i)
+        {
+            pair<int, int> coord{initial_alive[i]};
 
-        if (coord.second < terrain_y_range.first || coord.second > terrain_y_range.second)
-            FATAL("initial cell y coordinate out of bound, got %d", coord.second);
+            if (coord.first < terrain_x_range.first || coord.first > terrain_x_range.second)
+                FATAL("initial cell x coordinate out of bound, got %d", coord.first);
 
-        sim.set_status(coord.second, coord.first, true);
+            if (coord.second < terrain_y_range.first || coord.second > terrain_y_range.second)
+                FATAL("initial cell y coordinate out of bound, got %d", coord.second);
+
+            sim.set_status(coord.second, coord.first, true);
+        }
     }
+    else if (initial["Alive"].get_type() != INVALID)
+        FATAL("incorrect type for Alive assignment");
 
     if (input["Colors"].get_type() != STRUCT)
         FATAL("missing Colors definition or incorrect value type");
