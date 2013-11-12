@@ -1,6 +1,7 @@
 What this program does
 ======================
-This project have two parts. life and life.gui
+This project have two parts, life and life.gui
+It is a Game of Life simulator and have both TUI and GUI interface. 
 
 life
 =======
@@ -49,9 +50,9 @@ LifeGrid.cc    - Custom widget for Qt to display simulated cell in life.gui
 LifeGrid.h     - Header file for LifeGrid.cc
 life.cc        - main function for life
 life.gui.cc    - main function for life.gui
-utils.c   - Utility functions
-utils.h   - Utility macros
-Makefile  - The Makefile for the whole project
+utils.c        - Utility functions
+utils.h        - Utility macros
+Makefile       - The Makefile for the whole project
 
 make will first compile miner_parser.l and miner_parser.y into C file, then
 compile each object file and link them together. Makefile knows how to compile
