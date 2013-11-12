@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
         switch (c)
         {
             case 'h':
-                cerr << "Usage: life.gui [-h] [-g n] [-s n] [-tx l..h] [-ty l..h] [-wx l..h] [-wy l..h] [filename]" << endl << endl
+                cerr << "Usage: life_gui [-h] [-g n] [-s n] [-tx l..h] [-ty l..h] [-wx l..h] [-wy l..h] [filename]" << endl << endl
                      << "  -g n      Specify the desired generation number. If omitted, the default should be n = 0" << endl
                      << "  -h        Display this message and quit" << endl
                      << "  -s n      Specify the size of each cell, in pixel, defult: 10" << endl

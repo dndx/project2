@@ -4,13 +4,13 @@ CFLAGS=-std=c++11 -Wall -DNDEBUG #-g
 QT_INCLUDE=-I/usr/lib64/qt4/mkspecs/linux-g++ -I. -I/usr/include/QtCore -I/usr/include/QtGui
 QT_LIBS=-L/usr/lib64 -lQtGui -lQtCore -lpthread -DQT_NO_DEBUG -DQT_GUI_LIB -DQT_CORE_LIB -DQT_SHARED
 
-all: life life.gui
+all: life life_gui
 
-life.gui : simulator.o miner_parser.tab.o lex.yy.o miner_type.o LifeGrid.o LifeGrid.moc.o utils.o life.gui.o
+life_gui : simulator.o miner_parser.tab.o lex.yy.o miner_type.o LifeGrid.o LifeGrid.moc.o utils.o life_gui.o
 	$(CC) $(CFLAGS) $(QT_INCLUDE) $(QT_LIBS) -o $@ $^
 
-life.gui.o : life.gui.cc LifeGrid.h
-	$(CC) $(CFLAGS) $(QT_INCLUDE) $(QT_LIBS) -c life.gui.cc
+life_gui.o : life_gui.cc LifeGrid.h
+	$(CC) $(CFLAGS) $(QT_INCLUDE) $(QT_LIBS) -c life_gui.cc
 
 LifeGrid.moc.o : LifeGrid.moc.cc
 	$(CC) $(CFLAGS) $(QT_INCLUDE) $(QT_LIBS) -c LifeGrid.moc.cc
@@ -49,4 +49,4 @@ lex.yy.c : miner_type.h miner_parser.tab.c miner_parser.l
 	flex --nounput miner_parser.l
 
 clean :
-	rm -f miner_parser.tab.c miner_parser.tab.h lex.yy.c *.o life life.gui LifeGrid.moc.cc
+	rm -f miner_parser.tab.c miner_parser.tab.h lex.yy.c *.o life life_gui LifeGrid.moc.cc
