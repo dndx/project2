@@ -138,7 +138,7 @@ int main(int argc, char *argv[])
         {
             case 'h':
                 cerr << "Usage: life [-fhv] [-g n] [-tx l..h] [-ty l..h] [-wx l..h] [-wy l..h] [filename]" << endl << endl
-                     << "  -f        Output should be in the same file format as Appendix A" << endl
+                     << "  -f        Output should be redirected to the stdout in the same file format as the input file" << endl
                      << "  -g n      Specify the desired generation number. If omitted, the default should be n = 0" << endl
                      << "  -h        Display this message and quit" << endl
                      << "  -tx l..h  Set the x range of the terrain; overrides values specified in the input file" << endl
@@ -355,9 +355,17 @@ int main(int argc, char *argv[])
         for (auto iy = sim.cbegin(); iy != sim.cend(); ++iy)
         {
             int y = terrain_y_range.first + (iy - sim.cbegin());
+            
+            if (y < window_y_range.first || y > window_y_range.second)
+                continue;
+
             for (auto ix = iy->cbegin(); ix != iy->cend(); ++ix)
             {
                 int x = terrain_x_range.first + (ix - iy->cbegin());
+
+                if (x < window_x_range.first || x > window_x_range.second)
+                    continue;
+
                 if (*ix) // alive
                 {
                     alive.push_back(pair<int, int>(x, y));
@@ -367,7 +375,9 @@ int main(int argc, char *argv[])
 
         // alive cells
         tmp = Struct();
-        tmp["Alive"] = alive;
+        
+        if (alive.size())
+            tmp["Alive"] = alive;
         input["Initial"] = tmp;
 
         cout << "Life = " << input << ';' << endl;
