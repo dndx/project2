@@ -1,0 +1,75 @@
+What this program does
+======================
+This project have two parts. life and life.gui
+
+life
+=======
+This program takes a grid description file from stdin or filename from
+command line argument, it then simulates the life process based on
+"Game of Life" rules. 
+
+Usage:
+======
+$ ./life -h
+
+Notes:
+======
+* You could specify -f and -v switches and the same time, however, the
+  one that occered last will be used. 
+* All range values must have form "low..high" where low <= high. 
+* If you specify same switches multipul times, only the last one will be used. 
+
+life.gui
+=======
+This program takes a grid description file from stdin or filename from
+command line argument, it then simulates the life process based on
+"Game of Life" rules. Result are displayed using graphic interface. 
+
+Usage:
+======
+$ ./life.gui -h
+
+Notes:
+======
+* All range values must have form "low..high" where low <= high. 
+* If you specify same switches multipul times, only the last one will be used. 
+
+How did I broke files
+=====================
+config.h       - Global configurations
+miner_parser.l - Lexical recognizer definition for Dr. Miner's file format
+miner_parser.y - Grammer description file for Dr. Mider's file format
+miner_parser.h - Header file for miner_paser.y file
+miner_type.cc  - Fancy class to represent any type of data that are defined in
+                 Dr. Miner's file format
+miner_type.h   - Header file for miner_type.cc
+simulator.cc   - Defines the simulator class for Game of Life
+simulator.h    - Header file for simulator.cc
+LifeGrid.cc    - Custom widget for Qt to display simulated cell in life.gui
+LifeGrid.h     - Header file for LifeGrid.cc
+life.cc        - main function for life
+life.gui.cc    - main function for life.gui
+utils.c   - Utility functions
+utils.h   - Utility macros
+Makefile  - The Makefile for the whole project
+
+make will first compile miner_parser.l and miner_parser.y into C file, then
+compile each object file and link them together. Makefile knows how to compile
+and link life.gui so no qmake is needed. 
+
+Techniques
+==========
+
+* Full functional and reusable parser written with flex and bison, can parse 
+  any file that is written in Dr. Miner's format
+* Used C++ class to do simulation for simplicy and reusability
+* Used vector<bool> to store cell status for minimized memory consumption
+* Use as many built in functions as possible. Does not re-invent wheels
+
+Whole Project
+=============
+* All code are valgrind warning-free (with --leak-check=full). 
+* Used as many C++ feature as possible to make code looks like C++ fashion
+* Developed with Vim, GCC, GNU Make, gdb, git and tmux on Pyrite.
+  You could `git log` to see my progress from beginning if you want. 
+
