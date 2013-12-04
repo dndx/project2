@@ -11,38 +11,6 @@
 
 using namespace std;
 
-QImage *generate_terrain(Simulator &sim, array<int, 3> alive, array<int, 3> dead, pair<int, int> yrange, pair<int, int> xrange)
-{
-    yrange.first = sim.to_y(yrange.first);
-    yrange.second = sim.to_y(yrange.second);
-    xrange.first = sim.to_x(xrange.first);
-    xrange.second = sim.to_x(xrange.second);
-
-    QImage *img = new QImage(xrange.second - xrange.first + 1, 
-                             yrange.second - yrange.first + 1, QImage::Format_ARGB32);
-    img->fill(QColor(dead[0], dead[1], dead[2]));
-
-    for (auto iy = sim.cbegin(); iy != sim.cend(); ++iy)
-    {
-        int y = iy - sim.cbegin();
-        if (y < yrange.first || y > yrange.second)
-            continue;
-
-        for (auto ix = iy->cbegin(); ix != iy->cend(); ++ix)
-        {
-            int x = ix - iy->cbegin();
-            if (x < xrange.first || x > xrange.second)
-                continue;
-            if (*ix) // alive
-            {
-                img->setPixel(x - xrange.first, yrange.second - y, QColor(alive[0], alive[1], alive[2]).rgba());
-            }
-        }
-    }
-
-    return img;
-}
-
 int main(int argc, char *argv[])
 {
     opterr = 0; // mute getopt error meesage
@@ -166,7 +134,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    Struct input = parse_miner_string(in_buffer);
+    pair<string, Struct> input = parse_miner_string(in_buffer);
 
     if (input["Terrain"].get_type() != STRUCT)
     {

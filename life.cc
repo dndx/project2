@@ -10,92 +10,6 @@ using namespace std;
 
 enum OutputFormat {VISUAL, MINER };
 
-void show_terrain(Simulator &sim, unsigned char alive, unsigned char dead, pair<int, int> yrange, pair<int, int> xrange)
-{
-    yrange.first = sim.to_y(yrange.first);
-    yrange.second = sim.to_y(yrange.second);
-    xrange.first = sim.to_x(xrange.first);
-    xrange.second = sim.to_x(xrange.second);
-
-    for (int i = yrange.second; i >= yrange.first; --i)
-    {
-        if ((unsigned int) i < sim.size() && i >= 0) // within terrain range
-        {
-            for (int i = xrange.first; i < 0; i++) // prefix cells not in terrain
-                cout << dead;
-
-            for (auto ix = sim[i].cbegin(); ix != sim[i].cend(); ++ix)
-            {
-                int x_index = ix - sim[i].cbegin();
-
-                if (x_index < xrange.first || x_index > xrange.second)
-                    continue;
-
-                if (*ix) // alive
-                {
-                    cout << alive;
-                }
-                else // dead
-                {
-                    cout << dead;
-                }
-            }
-
-            for (int i = sim.xsize() - 1; i < xrange.second; i++) // postfix cells not in terrain
-                cout << dead;
-        }
-        else // not in terrain range
-        {
-            for (int i = 0; i < xrange.second - xrange.first + 1; ++i)
-                cout << dead;
-        }
-        cout << endl;
-    }
-
-    return;
-
-    for (unsigned i = yrange.second; i > sim.size() - 1; --i)
-    {
-        for (unsigned j = 0; j < sim.xsize(); j++)
-        {
-            cout << dead;
-        }
-        cout << endl;
-    }
-
-
-    for (auto iy = sim.crbegin(); iy != sim.crend(); ++iy)
-    {
-        int y = sim.size() - 1 - (iy - sim.crbegin());
-        if (y < yrange.first || y > yrange.second)
-            continue;
-
-        for (int i = xrange.first; i < 0; i++) // pre-row dead cell
-            cout << dead;
-
-
-        for (auto ix = iy->cbegin(); ix != iy->cend(); ++ix)
-        {
-            int x = ix - iy->cbegin();
-            if (x < xrange.first || x > xrange.second)
-                continue;
-            if (*ix) // alive
-            {
-                cout << alive;
-            }
-            else // dead
-            {
-                cout << dead;
-            }
-        }
-
-        for (int i = 0; i <= xrange.second - (iy->cend() - iy->cbegin()); i++) // post-row dead cell
-            cout << dead;
-
-        cout << endl;
-    }
-}
-
 int main(int argc, char *argv[])
 {
     opterr = 0; // mute getopt error meesage
@@ -223,14 +137,14 @@ int main(int argc, char *argv[])
         }
     }
 
-    Struct input = parse_miner_string(in_buffer);
+    pair<string, Struct> input = parse_miner_string(in_buffer);
 
-    if (input["Terrain"].get_type() != STRUCT)
+    if (input.second["Terrain"].get_type() != STRUCT)
     {
         FATAL("missing Terrain definition or incorrect value type for Terrain");
     }
 
-    Struct terrain_range{input["Terrain"]};
+    Struct terrain_range{input.second["Terrain"]};
 
     if (terrain_range["Xrange"].get_type() != RANGE || terrain_range["Yrange"].get_type() != RANGE)
     {
@@ -239,16 +153,16 @@ int main(int argc, char *argv[])
 
     Struct window_range;
 
-    if (!input.count("Window"))
+    if (!input.second.count("Window"))
     {
         window_range = terrain_range;
     }
     else
     {
-        if (input["Window"].get_type() != STRUCT)
+        if (input.second["Window"].get_type() != STRUCT)
             FATAL("incorrect type of Window");
 
-        window_range = input["Window"];
+        window_range = input.second["Window"];
 
         if ((window_range["Xrange"].get_type() != RANGE && window_range["Xrange"].get_type() != INVALID) ||
             (window_range["Yrange"].get_type() != RANGE && window_range["Yrange"].get_type() != INVALID))
@@ -287,103 +201,190 @@ int main(int argc, char *argv[])
     if (window_y_range.first > window_y_range.second || window_x_range.first > window_x_range.second)
         FATAL("window value must be low..high, got high..low");
 
-    Simulator sim{terrain_y_range.first, terrain_y_range.second,
-                  terrain_x_range.first, terrain_x_range.second};
+    Simulator *sim = nullptr;
+    array<unsigned char, 4> table;
 
-    if (input["Initial"].get_type() != STRUCT)
-        FATAL("missing Initial defination or incorrect value type for Initial");
-
-    Struct initial{input["Initial"]};
-    if (initial["Alive"].get_type() == LIST)
+    if (!input.first.compare("Life"))
     {
-        List initial_alive{initial["Alive"]};
+        sim = new GoLSimulator{terrain_y_range.first, terrain_y_range.second,
+                      terrain_x_range.first, terrain_x_range.second};
 
-        for (unsigned int i = 0; i < initial_alive.size(); ++i)
+        if (input.second["Initial"].get_type() != STRUCT)
+            FATAL("missing Initial defination or incorrect value type for Initial");
+
+        Struct initial{input.second["Initial"]};
+        if (initial["Alive"].get_type() == LIST)
         {
-            pair<int, int> coord{initial_alive[i]};
+            List initial_alive{initial["Alive"]};
 
-            if (coord.first < terrain_x_range.first || coord.first > terrain_x_range.second)
-                FATAL("initial cell x coordinate out of bound, got %d", coord.first);
-
-            if (coord.second < terrain_y_range.first || coord.second > terrain_y_range.second)
-                FATAL("initial cell y coordinate out of bound, got %d", coord.second);
-
-            sim.set_status(coord.second, coord.first, true);
-        }
-    }
-    else if (initial["Alive"].get_type() != INVALID)
-        FATAL("incorrect type for Alive assignment");
-
-    /*if (window_y_range.first < terrain_y_range.first || window_y_range.second > terrain_y_range.second)
-        FATAL("Y range of Window out of bound");
-
-    if (window_x_range.first < terrain_x_range.first || window_x_range.second > terrain_x_range.second)
-        FATAL("X range of Window out of bound");*/
-
-    if (input["Chars"].get_type() != STRUCT)
-        FATAL("missing Chars definition or incorrect value type");
-
-    Struct chars{input["Chars"]};
-
-    if (chars["Alive"].get_type() != INTEGER || chars["Dead"].get_type() != INTEGER)
-        FATAL("missing Alive and Dead definition or incorrect value type");
-
-    unsigned char alive{chars["Alive"]}, dead{chars["Dead"]};
-
-    for (int i = 0; i < generation; i++)
-        sim.simulate();
-
-    if (output_format == VISUAL)
-    {
-        show_terrain(sim, alive, dead, window_y_range, window_x_range);
-    }
-    else
-    {
-        Struct tmp;
-        
-        // write terrain struct
-        tmp["Xrange"] = terrain_x_range;
-        tmp["Yrange"] = terrain_y_range;
-        input["Terrain"] = tmp;
-
-        // write window struct
-        tmp = Struct();
-        tmp["Xrange"] = window_x_range;
-        tmp["Yrange"] = window_y_range;
-        input["Window"] = tmp;
-
-        List alive;
-
-        for (auto iy = sim.cbegin(); iy != sim.cend(); ++iy)
-        {
-            int y = terrain_y_range.first + (iy - sim.cbegin());
-            
-            if (y < window_y_range.first || y > window_y_range.second)
-                continue;
-
-            for (auto ix = iy->cbegin(); ix != iy->cend(); ++ix)
+            for (unsigned int i = 0; i < initial_alive.size(); ++i)
             {
-                int x = terrain_x_range.first + (ix - iy->cbegin());
+                pair<int, int> coord{initial_alive[i]};
 
-                if (x < window_x_range.first || x > window_x_range.second)
-                    continue;
+                if (coord.first < terrain_x_range.first || coord.first > terrain_x_range.second)
+                    FATAL("initial cell x coordinate out of bound, got %d", coord.first);
 
-                if (*ix) // alive
-                {
-                    alive.push_back(pair<int, int>(x, y));
-                }
+                if (coord.second < terrain_y_range.first || coord.second > terrain_y_range.second)
+                    FATAL("initial cell y coordinate out of bound, got %d", coord.second);
+
+                sim->set_status(coord.second, coord.first, GoLSimulator::STATE_ALIVE);
+            }
+        }
+        else if (initial["Alive"].get_type() != INVALID)
+            FATAL("incorrect type for Alive assignment");
+
+        if (input.second["Chars"].get_type() != STRUCT)
+            FATAL("missing Chars definition or incorrect value type");
+
+        Struct chars{input.second["Chars"]};
+
+        if (chars["Alive"].get_type() != INTEGER || chars["Dead"].get_type() != INTEGER)
+            FATAL("missing Alive and Dead definition or incorrect value type");
+
+        table[0] = chars["Dead"];
+        table[1] = chars["Alive"];
+    }
+    else if (!input.first.compare("WireWorld"))
+    {
+        sim = new WWSimulator{terrain_y_range.first, terrain_y_range.second,
+                      terrain_x_range.first, terrain_x_range.second};
+
+        if (input.second["Initial"].get_type() != STRUCT)
+            FATAL("missing Initial defination or incorrect value type for Initial");
+
+        Struct initial{input.second["Initial"]};
+        if (initial["Head"].get_type() == LIST)
+        {
+            List initial_list{initial["Head"]};
+
+            for (unsigned int i = 0; i < initial_list.size(); ++i)
+            {
+                pair<int, int> coord{initial_list[i]};
+
+                if (coord.first < terrain_x_range.first || coord.first > terrain_x_range.second)
+                    FATAL("initial cell x coordinate out of bound, got %d", coord.first);
+
+                if (coord.second < terrain_y_range.first || coord.second > terrain_y_range.second)
+                    FATAL("initial cell y coordinate out of bound, got %d", coord.second);
+
+                sim->set_status(coord.second, coord.first, WWSimulator::STATE_HEAD);
             }
         }
 
-        // alive cells
-        tmp = Struct();
-        
-        if (alive.size())
-            tmp["Alive"] = alive;
-        input["Initial"] = tmp;
+        if (initial["Tail"].get_type() == LIST)
+        {
+            List initial_list{initial["Tail"]};
 
-        cout << "Life = " << input << ';' << endl;
+            for (unsigned int i = 0; i < initial_list.size(); ++i)
+            {
+                pair<int, int> coord{initial_list[i]};
+
+                if (coord.first < terrain_x_range.first || coord.first > terrain_x_range.second)
+                    FATAL("initial cell x coordinate out of bound, got %d", coord.first);
+
+                if (coord.second < terrain_y_range.first || coord.second > terrain_y_range.second)
+                    FATAL("initial cell y coordinate out of bound, got %d", coord.second);
+
+                sim->set_status(coord.second, coord.first, WWSimulator::STATE_TAIL);
+            }
+        }
+
+        if (initial["Wire"].get_type() == LIST)
+        {
+            List initial_list{initial["Wire"]};
+
+            for (unsigned int i = 0; i < initial_list.size(); ++i)
+            {
+                pair<int, int> coord{initial_list[i]};
+
+                if (coord.first < terrain_x_range.first || coord.first > terrain_x_range.second)
+                    FATAL("initial cell x coordinate out of bound, got %d", coord.first);
+
+                if (coord.second < terrain_y_range.first || coord.second > terrain_y_range.second)
+                    FATAL("initial cell y coordinate out of bound, got %d", coord.second);
+
+                sim->set_status(coord.second, coord.first, WWSimulator::STATE_WIRE);
+            }
+        }
+
+        if (input.second["Chars"].get_type() != STRUCT)
+            FATAL("missing Chars definition or incorrect value type");
+
+        Struct chars{input.second["Chars"]};
+
+        if (chars["Empty"].get_type() != INTEGER || chars["Head"].get_type() != INTEGER ||
+            chars["Wire"].get_type() != INTEGER || chars["Tail"].get_type() != INTEGER)
+            FATAL("missing Empty or Head or Wire or Tail definition or incorrect value type");
+
+        table[0] = chars["Empty"];
+        table[1] = chars["Head"];
+        table[2] = chars["Tail"];
+        table[3] = chars["Wire"];
     }
+    else if (!input.first.compare("Elementary"))
+    {
+        if (input.second["Rule"].get_type() != INTEGER)
+            FATAL("missing Rule definition or incorrect value type for Rule");
+
+        if (input.second["Rule"] < 0)
+            FATAL("Rule must be greater or equal to 0");
+
+        sim = new ECSimulator{terrain_y_range.first, terrain_y_range.second,
+                      terrain_x_range.first, terrain_x_range.second, input.second["Rule"]};
+
+        if (input.second["Initial"].get_type() != STRUCT)
+            FATAL("missing Initial defination or incorrect value type for Initial");
+
+        Struct initial{input.second["Initial"]};
+        if (initial["One"].get_type() == LIST)
+        {
+            List initial_one{initial["One"]};
+
+            for (unsigned int i = 0; i < initial_one.size(); ++i)
+            {
+                pair<int, int> coord{initial_one[i]};
+
+                if (coord.first < terrain_x_range.first || coord.first > terrain_x_range.second)
+                    FATAL("initial cell x coordinate out of bound, got %d", coord.first);
+
+                if (coord.second < terrain_y_range.first || coord.second > terrain_y_range.second)
+                    FATAL("initial cell y coordinate out of bound, got %d", coord.second);
+
+                sim->set_status(coord.second, coord.first, ECSimulator::STATE_ONE);
+            }
+        }
+        else if (initial["One"].get_type() != INVALID)
+            FATAL("incorrect type for Alive assignment");
+
+        if (input.second["Chars"].get_type() != STRUCT)
+            FATAL("missing Chars definition or incorrect value type");
+
+        Struct chars{input.second["Chars"]};
+
+        if (chars["One"].get_type() != INTEGER || chars["Zero"].get_type() != INTEGER)
+            FATAL("missing One or Zero definition or incorrect value type");
+
+        table[0] = chars["Zero"];
+        table[1] = chars["One"];
+    }
+    else
+    {
+        FATAL("unknown simulation type");
+    }
+
+    for (int i = 0; i < generation; i++)
+        sim->simulate();
+
+    if (output_format == VISUAL)
+    {
+        sim->show(table, window_y_range, window_x_range);
+    }
+    else
+    {
+        sim->show_file(input, terrain_y_range, terrain_x_range, window_y_range, window_x_range);
+    }
+
+    delete sim;
 
     return 0;
 }

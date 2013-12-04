@@ -6,6 +6,7 @@
 using namespace std;
 
 Struct *output;
+char *identifier;
 
 extern "C"
 {
@@ -52,7 +53,10 @@ extern "C"
 
 %%
 
-file : TOKEN_KEY TOKEN_EQUAL_SIGN struct TOKEN_SEMICOLON {output = $3; }
+file : key TOKEN_EQUAL_SIGN struct TOKEN_SEMICOLON {
+        output = $3;
+        identifier = $1;
+     }
      ;
 
 string : TOKEN_STRING {
@@ -118,7 +122,7 @@ list : TOKEN_LEFT_PARENTHESIS TOKEN_INTEGER TOKEN_COMMA
 
 %%
 
-Struct parse_miner_string(string &sin)
+pair<string, Struct> parse_miner_string(string &sin)
 {
     switch_string(sin.c_str());
 
@@ -127,9 +131,10 @@ Struct parse_miner_string(string &sin)
     if (ret)
         FATAL("error while parsing miner file");
 
-    Struct tmp = *output;
+    pair<string, Struct> result(string(identifier), *output);
     delete output;
-    return tmp;
+    free(identifier);
+    return result;
 }
 
 void yyerror(const char *s)
