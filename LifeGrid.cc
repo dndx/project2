@@ -27,6 +27,7 @@ void LifeGrid::setPenColor(const QColor &newColor) {
 void LifeGrid::setIconImage(const QImage &newImage) {
     if (newImage != image) {
         image = newImage.convertToFormat(QImage::Format_ARGB32); update();
+        update();
         updateGeometry();
     }
 }

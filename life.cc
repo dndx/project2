@@ -201,7 +201,7 @@ int main(int argc, char *argv[])
     if (window_y_range.first > window_y_range.second || window_x_range.first > window_x_range.second)
         FATAL("window value must be low..high, got high..low");
 
-    Simulator *sim = nullptr;
+    Simulator *sim{nullptr};
     array<unsigned char, 4> table;
 
     if (!input.first.compare("Life"))
