@@ -371,6 +371,8 @@ int main(int argc, char *argv[])
         FATAL("unknown simulation type");
     }
 
+    sim->set_reset();
+
     string title{"No Title"};
     if (input.second["Name"].get_type() == STRING)
         title = (string) input.second["Name"];
@@ -384,21 +386,22 @@ int main(int argc, char *argv[])
     QWidget *window = new QWidget;
     window->setWindowTitle(title.c_str());
 
-    LifeGrid *l = new LifeGrid();
+    QHBoxLayout *layout = new QHBoxLayout(window);
+    layout->setSpacing(0);
+    layout->setMargin(0);
+
+    QScrollArea *scroll_area = new QScrollArea(window);
+    scroll_area->setBackgroundRole(QPalette::Dark);
+    scroll_area->setWidgetResizable(true);
+    layout->addWidget(scroll_area);
+
+    LifeGrid *l = new LifeGrid(scroll_area);
     l->setIconImage(*img);
     delete img;
     l->setZoomFactor(grid_size);
+    scroll_area->setWidget(l);
 
-    QScrollArea *scrollArea = new QScrollArea;
-    scrollArea->setBackgroundRole(QPalette::Dark);
-    scrollArea->setWidget(l);
-
-    QHBoxLayout *layout = new QHBoxLayout;
-    layout->setSpacing(0);
-    layout->setMargin(0);
-    layout->addWidget(scrollArea);
-
-    ControlDialog *controls = new ControlDialog(sim, l, table, window_y_range, window_x_range);
+    ControlDialog *controls = new ControlDialog(sim, l, table, window_y_range, window_x_range, window);
     controls->show();
 
     window->setLayout(layout);

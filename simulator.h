@@ -12,7 +12,7 @@
 class Simulator {
     public:
         Simulator(int y_low, int y_high, int x_low, int x_high);
-        virtual void simulate() = 0;
+        virtual void simulate();
         void show(std::array<unsigned char, 4> &table, std::pair<int, int> yrange, std::pair<int, int> xrange);
         virtual void show_file(std::pair<std::string, Struct> &input, std::pair<int, int> terrain_y_range, std::pair<int, int> terrain_x_range,
                      std::pair<int, int> window_y_range, std::pair<int, int> window_x_range) = 0;
@@ -21,6 +21,9 @@ class Simulator {
         char get_status(int y, int x);
         unsigned int to_x(int x);
         unsigned int to_y(int y);
+        void set_reset(); // save current terrain
+        void reset(); // reset to generation 0
+        size_t get_generation();
         std::vector<char>::size_type xsize() const noexcept;
         std::vector<std::vector<char>>::const_iterator cbegin();
         std::vector<std::vector<char>>::const_iterator cend();
@@ -31,9 +34,10 @@ class Simulator {
         virtual ~Simulator() {};
 
     protected:
-        std::vector<std::vector<char>> grid;
+        std::vector<std::vector<char>> grid, original;
         const int y_low, y_high;
         const int x_low, x_high;
+        size_t generation = 0;
 };
 
 class GoLSimulator : public Simulator {

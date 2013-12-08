@@ -1,10 +1,9 @@
 #include <QWidget>
-#include <QPushButton>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
-#include <QLabel>
 #include <QApplication>
 #include <QCloseEvent>
+#include <cstdio>
 #include "ControlDialog.h"
 
 using namespace std;
@@ -12,8 +11,8 @@ using namespace std;
 ControlDialog::ControlDialog(Simulator *sim, LifeGrid *l, 
                              array<array<int, 3>, 4> &table,
                              pair<int, int> &window_y_range,
-                             pair<int, int> &window_x_range) :
-    QDialog(), sim(sim), l(l), table(table), 
+                             pair<int, int> &window_x_range, QWidget *parent) :
+    QDialog(parent), sim(sim), l(l), table(table), 
     window_y_range(window_y_range), window_x_range(window_x_range)
 {
     QHBoxLayout *grid_size_layout = new QHBoxLayout;
@@ -35,25 +34,32 @@ ControlDialog::ControlDialog(Simulator *sim, LifeGrid *l,
 
 
     QHBoxLayout *delay_layout = new QHBoxLayout;
+
     QLabel *delay_text = new QLabel("Delay:");
     delay_layout->addWidget(delay_text);
+
     delay_spin_box = new QSpinBox;
     delay_spin_box->setRange(0, 10000);
     delay_spin_box->setValue(delay);
+    connect(delay_spin_box, SIGNAL(valueChanged(int)), this, SLOT(delayChanged(int)));
     delay_layout->addWidget(delay_spin_box);
+
     delay_slider = new QSlider(Qt::Horizontal);
     delay_slider->setRange(0, 10000);
     delay_slider->setValue(delay);
+    connect(delay_slider, SIGNAL(valueChanged(int)), this, SLOT(delayChanged(int)));
     delay_layout->addWidget(delay_slider);
 
-    QLabel *generation_text = new QLabel("Generation: 0");
+    generation_text = new QLabel("Generation: 0");
 
     QHBoxLayout *control_layout = new QHBoxLayout;
     QPushButton *control_quit = new QPushButton("Quit");
     connect(control_quit, SIGNAL(released()), this, SLOT(quitApplication()));
     QPushButton *control_restart = new QPushButton("Restart");
-    QPushButton *control_play = new QPushButton("Play");
-    QPushButton *control_step = new QPushButton("Step");
+    connect(control_restart, SIGNAL(released()), this, SLOT(restart()));
+    control_play = new QPushButton("Play");
+    connect(control_play, SIGNAL(released()), this, SLOT(startOrStop()));
+    control_step = new QPushButton("Step");
     connect(control_step, SIGNAL(released()), this, SLOT(step()));
     control_layout->addWidget(control_quit);
     control_layout->addWidget(control_restart);
@@ -65,6 +71,10 @@ ControlDialog::ControlDialog(Simulator *sim, LifeGrid *l,
     layout->addLayout(delay_layout);
     layout->addWidget(generation_text);
     layout->addLayout(control_layout);
+
+    timer = new QTimer;
+    timer->setSingleShot(false);
+    connect(timer, SIGNAL(timeout()), this, SLOT(step()));
 
     setLayout(layout);
     setWindowTitle("Controls");
@@ -80,17 +90,55 @@ void ControlDialog::quitApplication()
     QApplication::quit();
 }
 
-void ControlDialog::step()
+void ControlDialog::refresh()
 {
-    sim->simulate();
     QImage *img = sim->generate_qt_terrain(table, window_y_range, window_x_range);
     l->setIconImage(*img);
     delete img;
+    char buffer[32];
+    snprintf(buffer, sizeof(buffer), "Generation: %lu", sim->get_generation());
+    generation_text->setText(buffer);
+}
+
+void ControlDialog::step()
+{
+    sim->simulate();
+    refresh();
 }
 
 void ControlDialog::gridSizeChanged(int new_value)
 {
     grid_size_slider->setValue(new_value);
     grid_size_spin_box->setValue(new_value);
+    l->setZoomFactor(new_value);
+}
+
+void ControlDialog::delayChanged(int new_value)
+{
+    delay_slider->setValue(new_value);
+    delay_spin_box->setValue(new_value);
+    timer->setInterval(new_value);
+}
+
+void ControlDialog::restart()
+{
+    sim->reset();
+    refresh();
+}
+
+void ControlDialog::startOrStop()
+{
+    if (timer->isActive())
+    {
+        timer->stop();
+        control_play->setText("Play");
+        control_step->setEnabled(true);
+    }
+    else
+    {
+        timer->start(delay_slider->value());
+        control_play->setText("Pause");
+        control_step->setEnabled(false);
+    }
 }
 

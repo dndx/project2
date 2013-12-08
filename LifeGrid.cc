@@ -7,7 +7,7 @@ LifeGrid::LifeGrid(QWidget *parent)
     setAttribute(Qt::WA_StaticContents);
     setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
     curColor = Qt::black;
-    zoom = 8;
+    zoom = 10;
     image = QImage(16, 16, QImage::Format_ARGB32);
     image.fill(qRgba(0, 0, 0, 0));
 }
@@ -26,9 +26,8 @@ void LifeGrid::setPenColor(const QColor &newColor) {
 
 void LifeGrid::setIconImage(const QImage &newImage) {
     if (newImage != image) {
-        image = newImage.convertToFormat(QImage::Format_ARGB32); update();
+        image = newImage.convertToFormat(QImage::Format_ARGB32);
         update();
-        updateGeometry();
     }
 }
 

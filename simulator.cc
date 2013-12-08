@@ -15,6 +15,11 @@ Simulator::Simulator(int y_low, int y_high, int x_low, int x_high) :
     }
 }
 
+void Simulator::simulate()
+{
+    generation++;
+}
+
 void Simulator::set_status(int y, int x, char status)
 {
     grid[to_y(y)][to_x(x)] = status;
@@ -33,6 +38,22 @@ unsigned int Simulator::to_x(int x)
 unsigned int Simulator::to_y(int y)
 {
     return y - y_low;
+}
+
+void Simulator::set_reset()
+{
+    original = grid;
+}
+
+void Simulator::reset()
+{
+    grid = original;
+    generation = 0;
+}
+
+size_t Simulator::get_generation()
+{
+    return generation;
 }
 
 vector<vector<char>>::const_iterator Simulator::cbegin()
@@ -158,6 +179,8 @@ GoLSimulator::GoLSimulator(int y_low, int y_high, int x_low, int x_high) :
 
 void GoLSimulator::simulate()
 {
+    Simulator::simulate();
+
     std::vector<std::vector<char>> next_gen{grid};
     
     for (auto iy = grid.cbegin(); iy != grid.cend(); ++iy)
@@ -263,6 +286,8 @@ WWSimulator::WWSimulator(int y_low, int y_high, int x_low, int x_high) :
 
 void WWSimulator::simulate()
 {
+    Simulator::simulate();
+
     std::vector<std::vector<char>> next_gen{grid};
     
     for (auto iy = grid.cbegin(); iy != grid.cend(); ++iy)
@@ -396,6 +421,8 @@ ECSimulator::ECSimulator(int y_low, int y_high, int x_low, int x_high, unsigned 
 
 void ECSimulator::simulate()
 {
+    Simulator::simulate();
+
     std::vector<std::vector<char>> next_gen{grid};
     
     for (auto iy = grid.cbegin(); iy != grid.cend(); ++iy)
