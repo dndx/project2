@@ -18,7 +18,7 @@ class ControlDialog : public QDialog
 
     public:
         ControlDialog(Simulator *sim, LifeGrid *l, std::array<std::array<int, 3>, 4> &table,
-                        std::pair<int, int> &window_y_range, std::pair<int, int> &window_x_range, QWidget *parent = 0);
+                        std::pair<int, int> &window_y_range, std::pair<int, int> &window_x_range, int grid_size, QWidget *parent = 0);
 
     protected:
         virtual void closeEvent(QCloseEvent*);
@@ -37,7 +37,7 @@ class ControlDialog : public QDialog
         LifeGrid *l;
         std::array<std::array<int, 3>, 4> &table;
         std::pair<int, int> &window_y_range, &window_x_range;
-        unsigned int delay = 1000, grid_size = 10;
+        const unsigned int delay = 1000;
         // Widgets
         QSpinBox *grid_size_spin_box, *delay_spin_box;
         QSlider *grid_size_slider, *delay_slider;

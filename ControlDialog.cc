@@ -11,7 +11,7 @@ using namespace std;
 ControlDialog::ControlDialog(Simulator *sim, LifeGrid *l, 
                              array<array<int, 3>, 4> &table,
                              pair<int, int> &window_y_range,
-                             pair<int, int> &window_x_range, QWidget *parent) :
+                             pair<int, int> &window_x_range, int grid_size, QWidget *parent) :
     QDialog(parent), sim(sim), l(l), table(table), 
     window_y_range(window_y_range), window_x_range(window_x_range)
 {
@@ -78,6 +78,7 @@ ControlDialog::ControlDialog(Simulator *sim, LifeGrid *l,
 
     setLayout(layout);
     setWindowTitle("Controls");
+    refresh();
 }
 
 void ControlDialog::closeEvent(QCloseEvent *event)

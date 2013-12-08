@@ -20,6 +20,7 @@ int main(int argc, char *argv[])
     int generation{0}, grid_size{10};
     bool terrain_x_override{false}, terrain_y_override{false};
     bool window_x_override{false}, window_y_override{false};
+    bool show_control{false};
     pair<int, int> terrain_y_range, terrain_x_range, window_y_range, window_x_range;
 
     for (int i = 1; i < argc; i++)
@@ -48,12 +49,13 @@ int main(int argc, char *argv[])
         }
     }
 
-    while ((c = getopt(argc, argv, "g:hq:w:e:r:s:")) != -1)
+    while ((c = getopt(argc, argv, "g:hcq:w:e:r:s:")) != -1)
     {
         switch (c)
         {
             case 'h':
-                cerr << "Usage: life_gui [-h] [-g n] [-s n] [-tx l..h] [-ty l..h] [-wx l..h] [-wy l..h] [filename]" << endl << endl
+                cerr << "Usage: life_gui [-h] [-c] [-g n] [-s n] [-tx l..h] [-ty l..h] [-wx l..h] [-wy l..h] [filename]" << endl << endl
+                     << "  -c        Show the simulation control window" << endl
                      << "  -g n      Specify the desired generation number. If omitted, the default should be n = 0" << endl
                      << "  -h        Display this message and quit" << endl
                      << "  -s n      Specify the size of each cell, in pixel, defult: 10" << endl
@@ -64,6 +66,10 @@ int main(int argc, char *argv[])
                      << "  -wy l..h  Set the y range of the output window; otherwise this defaults to the x range of the terrain" << endl
                      << endl;
                 return 0;
+
+            case 'c':
+                show_control = true;
+                break;
 
             case 'g':
                 generation = atoi(optarg);
@@ -401,8 +407,11 @@ int main(int argc, char *argv[])
     l->setZoomFactor(grid_size);
     scroll_area->setWidget(l);
 
-    ControlDialog *controls = new ControlDialog(sim, l, table, window_y_range, window_x_range, window);
-    controls->show();
+    if (show_control)
+    {
+        ControlDialog *controls = new ControlDialog(sim, l, table, window_y_range, window_x_range, grid_size, window);
+        controls->show();
+    }
 
     window->setLayout(layout);
     window->show();
