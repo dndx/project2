@@ -379,7 +379,7 @@ int main(int argc, char *argv[])
 
     sim->set_reset();
 
-    string title{"No Title"};
+    string title;
     if (input.second["Name"].get_type() == STRING)
         title = (string) input.second["Name"];
 
