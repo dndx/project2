@@ -331,8 +331,8 @@ int main(int argc, char *argv[])
         if (input.second["Rule"].get_type() != INTEGER)
             FATAL("missing Rule definition or incorrect value type for Rule");
 
-        if (input.second["Rule"] < 0)
-            FATAL("Rule must be greater or equal to 0");
+        if (input.second["Rule"] < 0 || input.second["Rule"] > 255)
+            FATAL("Rule must be greater or equal to 0 and less and equal to 255");
 
         sim = new ECSimulator{terrain_y_range.first, terrain_y_range.second,
                       terrain_x_range.first, terrain_x_range.second, input.second["Rule"]};
