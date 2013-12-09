@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
             case 'h':
                 cerr << "Usage: life_gui [-h] [-c] [-g n] [-s n] [-tx l..h] [-ty l..h] [-wx l..h] [-wy l..h] [filename]" << endl << endl
                      << "  -c        Show the simulation control window" << endl
-                     << "  -g n      Specify the desired generation number. If omitted, the default should be n = 0" << endl
+                     << "  -g n      Specify the desired generation number. If omitted, the default will be n = 0" << endl
                      << "  -h        Display this message and quit" << endl
                      << "  -s n      Specify the size of each cell, in pixel, defult: 10" << endl
                      << "  -tx l..h  Set the x range of the terrain; overrides values specified in the input file" << endl
@@ -101,6 +101,11 @@ int main(int argc, char *argv[])
                 grid_size = atoi(optarg);
                 if (grid_size <= 0)
                     FATAL("grid size muse be at least 1 pixel");
+                if (grid_size > 50)
+                {
+                    LOGI("grid size is too big, capped to 50 pixel");
+                    grid_size = 50;
+                }
                 break;
 
             case '?':
