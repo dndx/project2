@@ -8,6 +8,11 @@
 
 using namespace std;
 
+/*
+ * Constructor for Control Dialog. 
+ * simulator and window ranges are required for re-rendering
+ * because C++ does not have closure :(
+ */
 ControlDialog::ControlDialog(Simulator *sim, LifeGrid *l, 
                              array<array<int, 3>, 4> &table,
                              pair<int, int> &window_y_range,
@@ -15,6 +20,8 @@ ControlDialog::ControlDialog(Simulator *sim, LifeGrid *l,
     QDialog(parent), sim(sim), l(l), table(table), 
     window_y_range(window_y_range), window_x_range(window_x_range)
 {
+    // add widgets and register events, nothing important
+
     QHBoxLayout *grid_size_layout = new QHBoxLayout;
 
     QLabel *grid_size_text = new QLabel("Grid size:");
@@ -78,19 +85,30 @@ ControlDialog::ControlDialog(Simulator *sim, LifeGrid *l,
 
     setLayout(layout);
     setWindowTitle("Controls");
+
+    // refresh generation label in case user started with certain generation
     refresh();
 }
 
+/*
+ * Event handler for "Quit" button
+ */
 void ControlDialog::closeEvent(QCloseEvent *event)
 {
     quitApplication();
 }
 
+/*
+ * Utility function to quit the application
+ */
 void ControlDialog::quitApplication()
 {
     QApplication::quit();
 }
 
+/*
+ * Update the grid widget and the generation label
+ */
 void ControlDialog::refresh()
 {
     QImage *img = sim->generate_qt_terrain(table, window_y_range, window_x_range);
@@ -101,12 +119,18 @@ void ControlDialog::refresh()
     generation_text->setText(buffer);
 }
 
+/*
+ * Event handler for "Step" button
+ */
 void ControlDialog::step()
 {
     sim->simulate();
     refresh();
 }
 
+/*
+ * Event handler for grid size spin box and scroll bar
+ */
 void ControlDialog::gridSizeChanged(int new_value)
 {
     grid_size_slider->setValue(new_value);
@@ -114,6 +138,9 @@ void ControlDialog::gridSizeChanged(int new_value)
     l->setZoomFactor(new_value);
 }
 
+/*
+ * Event handler for delay spin box and scroll bar
+ */
 void ControlDialog::delayChanged(int new_value)
 {
     delay_slider->setValue(new_value);
@@ -121,12 +148,19 @@ void ControlDialog::delayChanged(int new_value)
     timer->setInterval(new_value);
 }
 
+/*
+ * Event handler for "Restart" button
+ */
 void ControlDialog::restart()
 {
     sim->reset();
     refresh();
 }
 
+/*
+ * Event handler for Start/Stop button,
+ * do different things depends on Timer status
+ */
 void ControlDialog::startOrStop()
 {
     if (timer->isActive())

@@ -202,6 +202,9 @@ size_t Struct::size() const {return m.size(); }
 
 using namespace std;
 
+/*
+ * Output struct in Dr. Miner's format
+ */
 std::ostream &operator<<(std::ostream &out, const Value &v)
 {
     switch (v.get_type())
@@ -228,7 +231,7 @@ std::ostream &operator<<(std::ostream &out, const Value &v)
         {
             List l = (List) v;
 
-            for (decltype(l.size()) i = 0; i < l.size(); i++)
+            for (decltype(l.size()) i = 0; i < l.size(); i++) // C++11 feature
             {
                 pair<int, int> p = l[i];
                 if (i)
@@ -238,7 +241,7 @@ std::ostream &operator<<(std::ostream &out, const Value &v)
             }
             break;
         }
-        case STRUCT:
+        case STRUCT: // Struct, output assignment by assignment
         {
             Struct s = (Struct) v;
 
@@ -255,6 +258,6 @@ std::ostream &operator<<(std::ostream &out, const Value &v)
             break;
     }
 
-    return out;
+    return out; // return ostream& for chain output
 }
 

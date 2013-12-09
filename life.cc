@@ -4,7 +4,7 @@
 #include <cstdio>
 #include "utils.h"
 #include "miner_parser.h"
-#include "simulator.h"
+#include "Simulators.h"
 
 using namespace std;
 
@@ -13,13 +13,20 @@ enum OutputFormat {VISUAL, MINER };
 int main(int argc, char *argv[])
 {
     opterr = 0; // mute getopt error meesage
-    int c;
-    int generation{0};
-    OutputFormat output_format = VISUAL;
-    bool terrain_x_override{false}, terrain_y_override{false};
-    bool window_x_override{false}, window_y_override{false};
+    int c; // option char
+    int generation{0}; // expected generation
+    OutputFormat output_format = VISUAL; // default output format is visual
+    bool terrain_x_override{false}, terrain_y_override{false}; // override terrain range from command line?
+    bool window_x_override{false}, window_y_override{false}; // override window range from command line?
     pair<int, int> terrain_y_range, terrain_x_range, window_y_range, window_x_range;
 
+    /*
+     * "preprocess" command line options
+     * getopt does not accept option in the non-standard form "-ty"
+     * and will treat it as "-t y"
+     * this loop replaces thoese options to single letters that are
+     * not used by other switches
+     */
     for (int i = 1; i < argc; i++)
     {
         string arg{argv[i]};
@@ -48,7 +55,7 @@ int main(int argc, char *argv[])
 
     while ((c = getopt(argc, argv, "fg:hq:w:ve:r:")) != -1)
     {
-        switch (c)
+        switch (c) // what switch did we get?
         {
             case 'h':
                 cerr << "Usage: life [-fhv] [-g n] [-tx l..h] [-ty l..h] [-wx l..h] [-wy l..h] [filename]" << endl << endl
@@ -113,9 +120,9 @@ int main(int argc, char *argv[])
         }
     }
 
-    std::string in_buffer;
+    std::string in_buffer; // buffer for the input file
 
-    if (optind < argc) // read from argument
+    if (optind < argc) // read filename from argument
     {
         ifstream in_file{argv[optind]};
         if (!in_file.is_open())
@@ -128,7 +135,7 @@ int main(int argc, char *argv[])
         }
         in_file.close();
     }
-    else
+    else // read from stdin
     {
         int ch;
         while ((ch = cin.get()) != EOF)
@@ -137,7 +144,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    pair<string, Struct> input = parse_miner_string(in_buffer);
+    pair<string, Struct> input = parse_miner_string(in_buffer); // parse the buffer, string is the simulation type
 
     if (input.second["Terrain"].get_type() != STRUCT)
     {
@@ -175,6 +182,8 @@ int main(int argc, char *argv[])
             window_range["Yrange"] = terrain_range["Yrange"];
     }
 
+    // If we are not overriding the window range from command line
+    // use value from file
     if (!terrain_y_override)
         terrain_y_range = (terrain_range["Yrange"]);
     if (!terrain_x_override)
@@ -202,9 +211,9 @@ int main(int argc, char *argv[])
         FATAL("window value must be low..high, got high..low");
 
     Simulator *sim{nullptr};
-    array<unsigned char, 4> table;
+    array<unsigned char, 4> table; // character table for visual output
 
-    if (!input.first.compare("Life"))
+    if (!input.first.compare("Life")) // Game of Life
     {
         sim = new GoLSimulator{terrain_y_range.first, terrain_y_range.second,
                       terrain_x_range.first, terrain_x_range.second};
@@ -213,7 +222,7 @@ int main(int argc, char *argv[])
             FATAL("missing Initial defination or incorrect value type for Initial");
 
         Struct initial{input.second["Initial"]};
-        if (initial["Alive"].get_type() == LIST)
+        if (initial["Alive"].get_type() == LIST) // does Alive list existes?
         {
             List initial_alive{initial["Alive"]};
 
@@ -241,10 +250,10 @@ int main(int argc, char *argv[])
         if (chars["Alive"].get_type() != INTEGER || chars["Dead"].get_type() != INTEGER)
             FATAL("missing Alive and Dead definition or incorrect value type");
 
-        table[0] = chars["Dead"];
-        table[1] = chars["Alive"];
+        table[GoLSimulator::STATE_DEAD] = chars["Dead"];
+        table[GoLSimulator::STATE_ALIVE] = chars["Alive"];
     }
-    else if (!input.first.compare("WireWorld"))
+    else if (!input.first.compare("WireWorld")) // Wire World
     {
         sim = new WWSimulator{terrain_y_range.first, terrain_y_range.second,
                       terrain_x_range.first, terrain_x_range.second};
@@ -316,12 +325,12 @@ int main(int argc, char *argv[])
             chars["Wire"].get_type() != INTEGER || chars["Tail"].get_type() != INTEGER)
             FATAL("missing Empty or Head or Wire or Tail definition or incorrect value type");
 
-        table[0] = chars["Empty"];
-        table[1] = chars["Head"];
-        table[2] = chars["Tail"];
-        table[3] = chars["Wire"];
+        table[WWSimulator::STATE_EMPTY] = chars["Empty"];
+        table[WWSimulator::STATE_HEAD] = chars["Head"];
+        table[WWSimulator::STATE_TAIL] = chars["Tail"];
+        table[WWSimulator::STATE_WIRE] = chars["Wire"];
     }
-    else if (!input.first.compare("Elementary"))
+    else if (!input.first.compare("Elementary")) // Elementary simulation
     {
         if (input.second["Rule"].get_type() != INTEGER)
             FATAL("missing Rule definition or incorrect value type for Rule");
@@ -364,15 +373,15 @@ int main(int argc, char *argv[])
         if (chars["One"].get_type() != INTEGER || chars["Zero"].get_type() != INTEGER)
             FATAL("missing One or Zero definition or incorrect value type");
 
-        table[0] = chars["Zero"];
-        table[1] = chars["One"];
+        table[ECSimulator::STATE_ZERO] = chars["Zero"];
+        table[ECSimulator::STATE_ONE] = chars["One"];
     }
     else
     {
         FATAL("unknown simulation type");
     }
 
-    for (int i = 0; i < generation; i++)
+    for (int i = 0; i < generation; i++) // simulate to expected generation
         sim->simulate();
 
     if (output_format == VISUAL)
@@ -384,7 +393,7 @@ int main(int argc, char *argv[])
         sim->show_file(input, terrain_y_range, terrain_x_range, window_y_range, window_x_range);
     }
 
-    delete sim;
+    delete sim; // free simulator to prevent memory leak
 
     return 0;
 }

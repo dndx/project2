@@ -9,7 +9,7 @@ class LifeGrid : public QWidget {
         Q_OBJECT
         Q_PROPERTY(QColor penColor READ penColor WRITE setPenColor)
         Q_PROPERTY(QImage iconImage READ iconImage WRITE setIconImage)
-        Q_PROPERTY(int zoomFactor READ zoomFactor WRITE setZoomFactor)
+        Q_PROPERTY(int zoomFactor READ zoomFactor WRITE setZoomFactor) // grid size
     public:
         LifeGrid(QWidget *parent = 0);
         void setPenColor(const QColor &newColor); QColor penColor() const { return curColor; }
@@ -17,7 +17,7 @@ class LifeGrid : public QWidget {
         int zoomFactor() const { return zoom; }
         void setIconImage(const QImage &newImage);
         QImage iconImage() const { return image; }
-        QSize sizeHint() const;
+        QSize sizeHint() const; // tell parent widget my size
     protected:
         void paintEvent(QPaintEvent *event);
     private:

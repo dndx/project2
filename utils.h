@@ -47,6 +47,9 @@
                           while(0)
 #endif
 
+/*
+ * turn a string "x..y" to an integer pair
+ */
 std::pair<int, int> extract_pair(const char *s);
 
 #endif /* !UTILS_H */

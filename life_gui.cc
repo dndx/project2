@@ -7,20 +7,25 @@
 #include <QScrollArea>
 #include "utils.h"
 #include "miner_parser.h"
-#include "simulator.h"
+#include "Simulators.h"
 #include "LifeGrid.h"
 #include "ControlDialog.h"
 
 using namespace std;
 
+// some codes in here are the same in life.cc and I'm not copying comments around
+// if you are having any difficulty understanding, refer to life.cc
+// the reason for not re-use is because those codes share little same parts
+// and does not really worth to reuse for easy to maintain
+// and readability
 int main(int argc, char *argv[])
 {
     opterr = 0; // mute getopt error meesage
     int c;
-    int generation{0}, grid_size{10};
+    int generation{0}, grid_size{10}; // excepted generation number and grid size
     bool terrain_x_override{false}, terrain_y_override{false};
     bool window_x_override{false}, window_y_override{false};
-    bool show_control{false};
+    bool show_control{false}; // does not show control by default
     pair<int, int> terrain_y_range, terrain_x_range, window_y_range, window_x_range;
 
     for (int i = 1; i < argc; i++)
@@ -251,8 +256,8 @@ int main(int argc, char *argv[])
         if (colors["Alive"].get_type() != TRIPLE || colors["Dead"].get_type() != TRIPLE)
             FATAL("missing Alive and Dead definition or incorrect value type");
 
-        table[0] = colors["Dead"];
-        table[1] = colors["Alive"];
+        table[GoLSimulator::STATE_DEAD] = colors["Dead"];
+        table[GoLSimulator::STATE_ALIVE] = colors["Alive"];
     }
     else if (!input.first.compare("WireWorld"))
     {
@@ -326,10 +331,10 @@ int main(int argc, char *argv[])
             colors["Wire"].get_type() != TRIPLE || colors["Tail"].get_type() != TRIPLE)
             FATAL("missing Empty or Head or Wire or Tail definition or incorrect value type");
 
-        table[0] = colors["Empty"];
-        table[1] = colors["Head"];
-        table[2] = colors["Tail"];
-        table[3] = colors["Wire"];
+        table[WWSimulator::STATE_EMPTY] = colors["Empty"];
+        table[WWSimulator::STATE_HEAD] = colors["Head"];
+        table[WWSimulator::STATE_TAIL] = colors["Tail"];
+        table[WWSimulator::STATE_WIRE] = colors["Wire"];
     }
     else if (!input.first.compare("Elementary"))
     {
@@ -374,16 +379,21 @@ int main(int argc, char *argv[])
         if (colors["One"].get_type() != TRIPLE || colors["Zero"].get_type() != TRIPLE)
             FATAL("missing One or Zero definition or incorrect value type");
 
-        table[0] = colors["Zero"];
-        table[1] = colors["One"];
+        table[ECSimulator::STATE_ZERO] = colors["Zero"];
+        table[ECSimulator::STATE_ONE] = colors["One"];
     }
     else
     {
         FATAL("unknown simulation type");
     }
 
-    sim->set_reset();
+    sim->set_reset(); // save the current state for resetting
 
+    /*
+     * Default window title is a space
+     * empty string does not quite work here because Qt will use
+     * executable name as window title in that case
+     */
     string title{" "};
     if (input.second["Name"].get_type() == STRING)
         title = (string) input.second["Name"];
@@ -401,8 +411,10 @@ int main(int argc, char *argv[])
     layout->setSpacing(0);
     layout->setMargin(0);
 
-    QScrollArea *scroll_area = new QScrollArea(window);
+    QScrollArea *scroll_area = new QScrollArea(window); // for scroll bars
     scroll_area->setBackgroundRole(QPalette::Dark);
+    // let the content inside scroll area resizable,
+    // otherwise grid resize doesn't work
     scroll_area->setWidgetResizable(true);
     layout->addWidget(scroll_area);
 
@@ -414,6 +426,8 @@ int main(int argc, char *argv[])
 
     if (show_control)
     {
+        // construct ControlDialog and set parent to window
+        // so that close main window will close ControlDialog too
         ControlDialog *controls = new ControlDialog(sim, l, table, window_y_range, window_x_range, grid_size, window);
         controls->show();
     }

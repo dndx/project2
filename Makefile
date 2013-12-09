@@ -2,11 +2,15 @@
 CC=g++
 QT_INCLUDE=-I/usr/lib64/qt4/mkspecs/linux-g++ -I. -I/usr/include/QtCore -I/usr/include/QtGui
 QT_LIBS=-L/usr/lib64 -lQtGui -lQtCore -lpthread -DQT_NO_DEBUG -DQT_GUI_LIB -DQT_CORE_LIB -DQT_SHARED
-CFLAGS=-std=c++11 -Wall $(QT_INCLUDE) $(QT_LIBS) -g #-DNDEBUG #-g
+CFLAGS=-std=c++11 -Wall $(QT_INCLUDE) $(QT_LIBS) -O3 -DNDEBUG
+
+NO_COLOR=\x1b[0m
+OK_COLOR=\x1b[32;01m
 
 all: life life_gui
+	@echo -e "$(OK_COLOR)full compilation was successful$(NO_COLOR)"
 
-life_gui : simulator.o miner_parser.tab.o lex.yy.o miner_type.o LifeGrid.o LifeGrid.moc.o ControlDialog.o ControlDialog.moc.o  utils.o life_gui.o
+life_gui : Simulators.o miner_parser.tab.o lex.yy.o miner_type.o LifeGrid.o LifeGrid.moc.o ControlDialog.o ControlDialog.moc.o  utils.o life_gui.o
 	$(CC) $(CFLAGS) -o $@ $^
 
 life_gui.o : life_gui.cc LifeGrid.h
@@ -30,7 +34,7 @@ LifeGrid.moc.cc : LifeGrid.h
 LifeGrid.o : LifeGrid.cc LifeGrid.h
 	$(CC) $(CFLAGS) -c LifeGrid.cc
 
-life : simulator.o miner_parser.tab.o lex.yy.o miner_type.o utils.o life.o
+life : Simulators.o miner_parser.tab.o lex.yy.o miner_type.o utils.o life.o
 	$(CC) $(CFLAGS) -o $@ $^
 
 utils.o : utils.cc utils.h
@@ -39,8 +43,8 @@ utils.o : utils.cc utils.h
 life.o : life.cc miner_parser.h
 	$(CC) $(CFLAGS) -c life.cc
 
-simulator.o : simulator.cc simulator.h
-	$(CC) $(CFLAGS) -c simulator.cc
+Simulators.o : Simulators.cc Simulators.h
+	$(CC) $(CFLAGS) -c Simulators.cc
 
 miner_parser.tab.o : miner_parser.tab.c
 	$(CC) $(CFLAGS) -c $^
